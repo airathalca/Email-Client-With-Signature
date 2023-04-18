@@ -771,7 +771,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             try {
                 Response<ResponseCipher> response = call.execute();
                 if (response.isSuccessful()) {
-                    message[0] = response.body().getCipher();
+                    message[0] = response.body().getCipherText();
                 } else {
                     Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
                 }
