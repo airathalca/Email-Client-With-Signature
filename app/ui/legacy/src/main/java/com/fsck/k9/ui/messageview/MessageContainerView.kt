@@ -40,6 +40,23 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.qualifier.named
 
+import com.fsck.k9.backend.RequestBody;
+import com.fsck.k9.backend.ResponseCipher;
+import com.fsck.k9.backend.RetrofitInstance;
+import com.fsck.k9.backend.ServiceCipher;
+import retrofit2.Call;
+import retrofit2.Callback;                      // For use of Callback interface
+import retrofit2.Response;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.CheckBox;
+import okhttp3.MediaType
+
 class MessageContainerView(context: Context, attrs: AttributeSet?) :
     LinearLayout(context, attrs),
     OnCreateContextMenuListener,
@@ -65,6 +82,10 @@ class MessageContainerView(context: Context, attrs: AttributeSet?) :
     private var attachmentCallback: AttachmentViewCallback? = null
     private var currentAttachmentResolver: AttachmentResolver? = null
 
+    private lateinit var decryptCheckBox: CheckBox;
+    private lateinit var decryptText: EditText;
+    private lateinit var decryptButton: Button;
+
     @get:JvmName("hasHiddenExternalImages")
     var hasHiddenExternalImages = false
         private set
@@ -87,6 +108,76 @@ class MessageContainerView(context: Context, attrs: AttributeSet?) :
         unsignedTextContainer = findViewById(R.id.message_unsigned_container)
         unsignedTextDivider = findViewById(R.id.message_unsigned_divider)
         unsignedText = findViewById(R.id.message_unsigned_text)
+
+        decryptCheckBox = findViewById(R.id.decrypt_message);
+        decryptText = findViewById(R.id.decrypt_key);
+        decryptButton = findViewById(R.id.decrypt_button);
+
+        decryptCheckBox.setOnCheckedChangeListener { buttonView, isChecked ->
+            if (isChecked) {
+                decryptText.setVisibility(View.VISIBLE);
+                decryptButton.setVisibility(View.VISIBLE);
+            } else {
+                decryptText.setVisibility(View.GONE);
+                decryptButton.setVisibility(View.GONE);
+            }
+        }
+        decryptText.addTextChangedListener(
+            object : TextWatcher {
+                override fun afterTextChanged(s: Editable) {
+                    // TODO Auto-generated method stub
+                }
+
+                override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
+                    // TODO Auto-generated method stub
+                }
+
+                override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+                    // TODO Auto-generated method stub
+                }
+            }
+        );
+
+        decryptButton.setOnClickListener {
+            var cipher = parse();
+            val key = decryptText.getText().toString();
+            val serviceCipher = RetrofitInstance.getRetrofitInstance();
+            val call = serviceCipher.decrypt(key, cipher);
+            try {
+                val response = call.execute();
+                if (response.isSuccessful()) {
+                    val body = response.body();
+                    if (body != null) {
+                        append(body.cipherText);
+                    } else {
+                        Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    fun parse(): String {
+        var message = currentHtmlText;
+        val index = message?.indexOf("<body><div dir=\"auto\">");
+        val lastIndex = message?.indexOf("</div></body>");
+        if (index != null && lastIndex != null) {
+            message = message!!.substring(index + 22, lastIndex);
+        }
+        return message!!;
+    }
+
+    fun append(ciphertext: String) {
+        var message = currentHtmlText;
+        val index = message?.indexOf("<body><div dir=\"auto\">");
+        val lastIndex = message?.indexOf("</div></body>");
+        if (index != null && lastIndex != null) {
+            message = message!!.substring(0, index + 22) + ciphertext + message!!.substring(lastIndex);
+        }
+        currentHtmlText = message;
+        refreshDisplayedContent();
     }
 
     override fun onCreateContextMenu(menu: ContextMenu, view: View, menuInfo: ContextMenuInfo?) {
