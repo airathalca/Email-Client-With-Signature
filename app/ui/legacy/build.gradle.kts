@@ -15,7 +15,8 @@ dependencies {
     // Remove AccountSetupIncoming's dependency on these
     compileOnly(projects.mail.protocols.imap)
     compileOnly(projects.mail.protocols.webdav)
-
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation(projects.plugins.openpgpApiLib.openpgpApi)
 
     implementation(libs.androidx.appcompat)

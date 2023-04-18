@@ -2,6 +2,7 @@ package com.fsck.k9.activity;
 
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -28,8 +29,10 @@ import android.os.Parcelable;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.ActionBar;
+import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -40,6 +43,9 @@ import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
 import android.view.ViewStub;
 import android.view.Window;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -72,6 +78,10 @@ import com.fsck.k9.activity.compose.ReplyToView;
 import com.fsck.k9.activity.compose.SaveMessageTask;
 import com.fsck.k9.activity.misc.Attachment;
 import com.fsck.k9.autocrypt.AutocryptDraftStateHeaderParser;
+import com.fsck.k9.backend.RequestBody;
+import com.fsck.k9.backend.ResponseCipher;
+import com.fsck.k9.backend.RetrofitInstance;
+import com.fsck.k9.backend.ServiceCipher;
 import com.fsck.k9.contact.ContactIntentHelper;
 import com.fsck.k9.controller.MessageReference;
 import com.fsck.k9.controller.MessagingController;
@@ -121,6 +131,10 @@ import org.jetbrains.annotations.NotNull;
 import org.openintents.openpgp.OpenPgpApiManager;
 import org.openintents.openpgp.util.OpenPgpApi;
 import timber.log.Timber;
+
+import retrofit2.Call;
+import retrofit2.Callback;                      // For use of Callback interface
+import retrofit2.Response;
 
 
 @SuppressWarnings("deprecation") // TODO get rid of activity dialogs and indeterminate progress bars
@@ -244,6 +258,10 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
     private boolean sendMessageHasBeenTriggered = false;
 
+    private EditText encryptionKey;
+    private String encryptionKeyString = "";
+    private CheckBox encryptionKeyCheckBox;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -340,8 +358,39 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         messageContentView = findViewById(R.id.message_content);
         messageContentView.getInputExtras(true).putBoolean("allowEmoji", true);
 
-        attachmentsView = findViewById(R.id.attachments);
+        encryptionKey = findViewById(R.id.encrypt_key);
+        encryptionKeyCheckBox = findViewById(R.id.encrypt_message);
 
+        encryptionKeyCheckBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                changesMadeSinceLastSave = true;
+                if (isChecked) {
+                    encryptionKey.setVisibility(View.VISIBLE);
+                    encryptionKeyString = encryptionKey.getText().toString();
+                } else {
+                    encryptionKey.setVisibility(View.GONE);
+                }
+            }
+        });
+
+        encryptionKey.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                changesMadeSinceLastSave = true;
+                encryptionKeyString = s.toString();
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        attachmentsView = findViewById(R.id.attachments);
         TextWatcher draftNeedsChangingTextWatcher = new SimpleTextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -714,28 +763,42 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             builder = SimpleMessageBuilder.newInstance();
             recipientPresenter.builderSetProperties(builder);
         }
-
+        final String[] message = { messageContentView.getText().toString() };
+        if (encryptionKeyCheckBox.isChecked()) {
+            ServiceCipher serviceCipher = RetrofitInstance.getRetrofitInstance();
+            RequestBody body = new RequestBody(encryptionKeyString, message[0]);
+            Call<ResponseCipher> call = serviceCipher.encrypt(body);
+            try {
+                Response<ResponseCipher> response = call.execute();
+                if (response.isSuccessful()) {
+                    message[0] = response.body().getCipher();
+                } else {
+                    Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         builder.setSubject(Utility.stripNewLines(subjectView.getText().toString()))
-                .setSentDate(new Date())
-                .setHideTimeZone(K9.isHideTimeZone())
-                .setInReplyTo(repliedToMessageId)
-                .setReferences(referencedMessageIds)
-                .setRequestReadReceipt(requestReadReceipt)
-                .setIdentity(identity)
-                .setReplyTo(replyToPresenter.getAddresses())
-                .setMessageFormat(currentMessageFormat)
-                .setText(CrLfConverter.toCrLf(messageContentView.getText()))
-                .setAttachments(attachmentPresenter.getAttachments())
-                .setInlineAttachments(attachmentPresenter.getInlineAttachments())
-                .setSignature(CrLfConverter.toCrLf(signatureView.getText()))
-                .setSignatureBeforeQuotedText(account.isSignatureBeforeQuotedText())
-                .setIdentityChanged(identityChanged)
-                .setSignatureChanged(signatureChanged)
-                .setCursorPosition(messageContentView.getSelectionStart())
-                .setMessageReference(relatedMessageReference)
-                .setDraft(isDraft)
-                .setIsPgpInlineEnabled(cryptoStatus.isPgpInlineModeEnabled());
-
+            .setSentDate(new Date())
+            .setHideTimeZone(K9.isHideTimeZone())
+            .setInReplyTo(repliedToMessageId)
+            .setReferences(referencedMessageIds)
+            .setRequestReadReceipt(requestReadReceipt)
+            .setIdentity(identity)
+            .setReplyTo(replyToPresenter.getAddresses())
+            .setMessageFormat(currentMessageFormat)
+            .setText(CrLfConverter.toCrLf(message[0]))
+            .setAttachments(attachmentPresenter.getAttachments())
+            .setInlineAttachments(attachmentPresenter.getInlineAttachments())
+            .setSignature(CrLfConverter.toCrLf(signatureView.getText()))
+            .setSignatureBeforeQuotedText(account.isSignatureBeforeQuotedText())
+            .setIdentityChanged(identityChanged)
+            .setSignatureChanged(signatureChanged)
+            .setCursorPosition(messageContentView.getSelectionStart())
+            .setMessageReference(relatedMessageReference)
+            .setDraft(isDraft)
+            .setIsPgpInlineEnabled(cryptoStatus.isPgpInlineModeEnabled());
         quotedMessagePresenter.builderSetProperties(builder);
 
         return builder;
