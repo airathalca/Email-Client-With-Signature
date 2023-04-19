@@ -88,8 +88,7 @@ public class EmailParser {
         PrivateKey privateKey;
 
         try {
-            EllipticalCurveKeyStore ellipticalCurveKeyStore = new EllipticalCurveKeyStore("example.p12",
-                "password");
+            EllipticalCurveKeyStore ellipticalCurveKeyStore = new EllipticalCurveKeyStore();
             ellipticalCurveKeyStore.load();
 
             privateKey = ellipticalCurveKeyStore.read();
@@ -103,6 +102,8 @@ public class EmailParser {
             }
 
         } catch (Exception e) {
+            e.printStackTrace(); // Mencatat Log Error
+
             privateKey = EmailParser.generatePrivateKey();
         }
 

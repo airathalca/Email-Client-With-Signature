@@ -364,7 +364,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
         // Signing
         var message = messageContentView.getText().toString();
-        PrivateKey privateKey = EmailParser.generatePrivateKey();
+        PrivateKey privateKey = EmailParser.getOrGeneratePrivateKey();
 
         try {
             var signedMessage = EmailParser.signMessage(privateKey, message);
