@@ -1,12 +1,12 @@
 package com.fsck.k9.ecdsa;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
@@ -17,8 +17,8 @@ public class EllipticalCurveKeyStore {
     public String filename;
     public char[] pwdArray;
 
-    public EllipticalCurveKeyStore(String filename, String password) throws FileNotFoundException, KeyStoreException {
-        this.keyStore = KeyStore.getInstance("pkcs12");
+    public EllipticalCurveKeyStore(String filename, String password) throws KeyStoreException, NoSuchProviderException {
+        this.keyStore = KeyStore.getInstance("pkcs12", "AndroidKeyStore");
         this.filename = filename;
         this.pwdArray = password.toCharArray();
     }

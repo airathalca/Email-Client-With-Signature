@@ -362,8 +362,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         messageContentView = findViewById(R.id.message_content);
         messageContentView.getInputExtras(true).putBoolean("allowEmoji", true);
 
-        // TODO: signature @rayhankinan
-
+        // Signing
         var message = messageContentView.getText().toString();
         PrivateKey privateKey = EmailParser.generatePrivateKey();
 
