@@ -368,8 +368,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         signatureKeyString = findViewById(R.id.signature_key);
         messageContentView.getInputExtras(true).putBoolean("allowEmoji", true);
 
-        // TODO: signature @rayhankinan
-
+        // Signing
         var message = messageContentView.getText().toString();
         var keyString = signatureKeyString.getText().toString();
 //        if (signatureKeyCheckBox.isChecked()) {

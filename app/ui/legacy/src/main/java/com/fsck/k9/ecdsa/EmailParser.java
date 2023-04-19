@@ -19,6 +19,33 @@ public class EmailParser {
         new BigInteger("4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5", 16));
     public static BigInteger n = new BigInteger("FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551", 16);
 
+    public static String exportPrivateKey(PrivateKey privateKey) {
+        byte[] encodedPrivateKey = privateKey.getEncoded();
+
+        return Base64.encodeToString(encodedPrivateKey, Base64.NO_WRAP | Base64.URL_SAFE);
+    }
+
+    public static PrivateKey importPrivateKey(String rawPrivateKey) {
+        byte[] decodedPrivateKey = Base64.decode(rawPrivateKey, Base64.NO_WRAP | Base64.URL_SAFE);
+
+        return new PrivateKey() {
+            @Override
+            public String getAlgorithm() {
+                return "ECDSA";
+            }
+
+            @Override
+            public String getFormat() {
+                return "PKCS#8";
+            }
+
+            @Override
+            public byte[] getEncoded() {
+                return decodedPrivateKey;
+            }
+        };
+    }
+
     public static String exportPublicKey(PublicKey publicKey) {
         byte[] encodedPublicKey = publicKey.getEncoded();
 
@@ -56,6 +83,32 @@ public class EmailParser {
 
     public static PrivateKey generatePrivateKey() {
         return EllipticalCurveKey.generatePrivateKey(EmailParser.ellipticalCurve, EmailParser.basePoint, EmailParser.n);
+    }
+
+    public static PrivateKey getOrGeneratePrivateKey() {
+        PrivateKey privateKey;
+
+        try {
+            EllipticalCurveKeyStore ellipticalCurveKeyStore = new EllipticalCurveKeyStore();
+            ellipticalCurveKeyStore.load();
+
+            privateKey = ellipticalCurveKeyStore.read();
+
+            if (privateKey == null) {
+                PrivateKey initialPrivateKey = EmailParser.generatePrivateKey();
+                ellipticalCurveKeyStore.save(initialPrivateKey);
+                ellipticalCurveKeyStore.store();
+
+                privateKey = initialPrivateKey;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace(); // Mencatat Log Error
+
+            privateKey = EmailParser.generatePrivateKey();
+        }
+
+        return privateKey;
     }
 
     public static String signMessage(PrivateKey privateKey, String message)
