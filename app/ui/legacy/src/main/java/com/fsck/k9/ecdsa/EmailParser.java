@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import android.util.Base64;
+import android.util.Log;
 
 import com.fsck.k9.keccak.Keccak;
 
@@ -72,6 +73,7 @@ public class EmailParser {
         PublicKey rawPublicKey = EllipticalCurveKey.generatePublicKey(ellipticalCurve, basePoint, n, privateKey);
         String publicKey = EmailParser.exportPublicKey(rawPublicKey);
 
+        Log.d("Sign", message);
         return message + "\n"
             + "---BEGIN SIGNATURE---\n" + sign + "\n---END SIGNATURE---\n"
             + "---BEGIN PUBLIC KEY---\n" + publicKey + "\n---END PUBLIC KEY---\n";
@@ -89,6 +91,9 @@ public class EmailParser {
 
         DigitalVerifying digitalVerifying = new DigitalVerifying(EmailParser.ellipticalCurve, EmailParser.basePoint,
             EmailParser.n, rawPublicKey);
+
+        Log.d("Verify", hash.toString());
+        Log.d("Verify", rawSign.toString());
 
         return digitalVerifying.verifySigning(hash, rawSign);
     }

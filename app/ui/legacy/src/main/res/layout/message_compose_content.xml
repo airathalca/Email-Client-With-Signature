@@ -83,13 +83,12 @@
             android:layout_marginVertical="8dp"
             android:orientation="horizontal">
 
-            <CheckBox
+            <Button
                 android:id="@+id/signature_message"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:checked="false"
                 android:padding="3dp"
-                android:text="Signature" />
+                android:text="Sign" />
 
             <EditText
                 android:id="@+id/signature_key"

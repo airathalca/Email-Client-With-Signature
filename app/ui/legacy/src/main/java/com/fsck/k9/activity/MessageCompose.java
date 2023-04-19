@@ -33,6 +33,7 @@ import androidx.appcompat.app.ActionBar;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -43,6 +44,7 @@ import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
 import android.view.ViewStub;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
@@ -263,8 +265,8 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     private EditText encryptionKey;
     private String encryptionKeyString = "";
     private CheckBox encryptionKeyCheckBox;
-    private String signatureKeyString = "";
-    private CheckBox signatureKeyCheckBox;
+    private EditText signatureKeyString;
+    private Button signatureKeyButton;
 
     //TODO: add attribute for signature
 
@@ -362,24 +364,63 @@ public class MessageCompose extends K9Activity implements OnClickListener,
                 getSupportLoaderManager(), this);
 
         messageContentView = findViewById(R.id.message_content);
+        signatureKeyButton = findViewById(R.id.signature_message);
+        signatureKeyString = findViewById(R.id.signature_key);
         messageContentView.getInputExtras(true).putBoolean("allowEmoji", true);
 
         // TODO: signature @rayhankinan
 
         var message = messageContentView.getText().toString();
-        PrivateKey privateKey = EmailParser.generatePrivateKey();
-
-        try {
-            var signedMessage = EmailParser.signMessage(privateKey, message);
-            messageContentView.setText(signedMessage); // TODO: CEK INI
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        var keyString = signatureKeyString.getText().toString();
+//        if (signatureKeyCheckBox.isChecked()) {
+//            PrivateKey privateKey = EmailParser.generatePrivateKey();
+//            if (keyString != "") {
+////               TODO: Dari user
+//            }
+//            try {
+//                var signedMessage = EmailParser.signMessage(privateKey, message);
+//                messageContentView.setText(signedMessage); // TODO: CEK INI
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
 
         encryptionKey = findViewById(R.id.encrypt_key);
         encryptionKeyCheckBox = findViewById(R.id.encrypt_message);
 
+//        signatureKeyButton.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+//                PrivateKey privateKey = EmailParser.generatePrivateKey();
+//                if (keyString != "") {
+////               TODO: Dari user
+//                }
+//                try {
+//                    var signedMessage = EmailParser.signMessage(privateKey, message);
+//                    messageContentView.setText(signedMessage); // TODO: CEK INI
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }
+//        });
+
+        signatureKeyButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                var message = messageContentView.getText().toString();
+                Log.d("OnButtonClick", message);
+                PrivateKey privateKey = EmailParser.generatePrivateKey();
+                if (keyString != "") {
+//               TODO: Dari user
+                }
+                try {
+                    var signedMessage = EmailParser.signMessage(privateKey, message);
+                    messageContentView.setText(signedMessage); // TODO: CEK INI
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
         encryptionKeyCheckBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

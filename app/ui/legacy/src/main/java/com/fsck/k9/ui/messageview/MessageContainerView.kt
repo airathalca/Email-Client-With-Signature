@@ -7,24 +7,22 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.AttributeSet
-import android.view.ContextMenu
+import android.util.Log
+import android.view.*
 import android.view.ContextMenu.ContextMenuInfo
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
 import android.view.View.OnCreateContextMenuListener
-import android.view.ViewGroup
 import android.webkit.WebView
 import android.webkit.WebView.HitTestResult
-import android.widget.LinearLayout
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.core.app.ShareCompat.IntentBuilder
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import com.fsck.k9.backend.RetrofitInstance
 import com.fsck.k9.contact.ContactIntentHelper
+import com.fsck.k9.ecdsa.EmailParser
 import com.fsck.k9.helper.ClipboardManager
 import com.fsck.k9.helper.Utility
 import com.fsck.k9.mail.Address
@@ -39,24 +37,6 @@ import com.fsck.k9.view.WebViewConfigProvider
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.qualifier.named
-
-import com.fsck.k9.backend.RequestBody;
-import com.fsck.k9.backend.ResponseCipher;
-import com.fsck.k9.backend.RetrofitInstance;
-import com.fsck.k9.backend.ServiceCipher;
-import retrofit2.Call;
-import retrofit2.Callback;                      // For use of Callback interface
-import retrofit2.Response;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Log
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.CheckBox;
-import com.fsck.k9.ecdsa.EmailParser
-import okhttp3.MediaType
 
 class MessageContainerView(context: Context, attrs: AttributeSet?) :
     LinearLayout(context, attrs),
@@ -150,14 +130,19 @@ class MessageContainerView(context: Context, attrs: AttributeSet?) :
                     // TODO Auto-generated method stub
                 }
 
-                override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
+                override fun beforeTextChanged(
+                    s: CharSequence,
+                    start: Int,
+                    count: Int,
+                    after: Int
+                ) {
                     // TODO Auto-generated method stub
                 }
 
                 override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
                     // TODO Auto-generated method stub
                 }
-            }
+            },
         );
 
         decryptButton.setOnClickListener {
@@ -186,19 +171,36 @@ class MessageContainerView(context: Context, attrs: AttributeSet?) :
             var emailText = parseEmailString();
 
             // Regular expressions to extract the signature and public key
-            val signatureRegex = Regex("^---BEGIN SIGNATURE---\\s*\n(.+?)\\s*\n---END SIGNATURE---", RegexOption.DOT_MATCHES_ALL)
-            val publicKeyRegex = Regex("^---BEGIN PUBLIC KEY---\\s*\n(.+?)\\s*\n---END PUBLIC KEY---", RegexOption.DOT_MATCHES_ALL)
+//            val signatureRegex = Regex("^---BEGIN SIGNATURE---\\s*\n(.+?)\\s*\n---END SIGNATURE---", RegexOption.DOT_MATCHES_ALL)
+//            val publicKeyRegex = Regex("^---BEGIN PUBLIC KEY---\\s*\n(.+?)\\s*\n---END PUBLIC KEY---", RegexOption.DOT_MATCHES_ALL)
+//
+//            // Extract the signature and public key from the email text
+//            signature = signatureRegex.find(emailText)?.groupValues?.get(1).toString()
+//            publicKey = publicKeyRegex.find(emailText)?.groupValues?.get(1).toString()
+//            // Remove the signature and public key from the email text to get the email message
+//            val emailMessage = emailText.replace(signatureRegex, "").replace(publicKeyRegex, "").trim()
 
-            // Extract the signature and public key from the email text
-            signature = signatureRegex.find(emailText)?.groupValues?.get(1).toString()
-            publicKey = publicKeyRegex.find(emailText)?.groupValues?.get(1).toString()
+            val firstPartition = emailText.split("\n---BEGIN SIGNATURE---\n".toRegex())
+                .dropLastWhile { it.isEmpty() }
+                .toTypedArray()
+            val receivedMessage = firstPartition[0]
 
-            // Remove the signature and public key from the email text to get the email message
-            val emailMessage = emailText.replace(signatureRegex, "").replace(publicKeyRegex, "").trim()
+            val secondPartition =
+                firstPartition[1].split("\n---END SIGNATURE---\n---BEGIN PUBLIC KEY---\n".toRegex())
+                    .dropLastWhile { it.isEmpty() }
+                    .toTypedArray()
+            signature = secondPartition[0].trim()
+            publicKey = secondPartition[1].replace("\n---END PUBLIC KEY---\n".toRegex(), "").trim()
+
+//            val result = EmailParser.verifyMessage(receivedMessage, signature, publicKey)
+            Log.d("Verify", receivedMessage)
+            Log.d("Verify", signature)
+            Log.d("Verify", publicKey)
 
             var isVerified = false;
             try {
-                isVerified = EmailParser.verifyMessage(emailMessage, signature, publicKey)
+                isVerified = EmailParser.verifyMessage(receivedMessage, signature, publicKey)
+                Log.d("Verify", isVerified.toString())
             } catch (e: Exception) {
                 Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show();
             }
