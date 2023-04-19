@@ -85,6 +85,10 @@ class MessageContainerView(context: Context, attrs: AttributeSet?) :
     private lateinit var decryptCheckBox: CheckBox;
     private lateinit var decryptText: EditText;
     private lateinit var decryptButton: Button;
+
+    private lateinit var verifySignatureCheckBox: CheckBox;
+    private lateinit var verifySignatureText: EditText;
+    private lateinit var verifySignatureButton: Button;
     // TODO: create signature
 
     @get:JvmName("hasHiddenExternalImages")
@@ -115,6 +119,10 @@ class MessageContainerView(context: Context, attrs: AttributeSet?) :
         decryptText = findViewById(R.id.decrypt_key);
         decryptButton = findViewById(R.id.decrypt_button);
 
+        verifySignatureCheckBox = findViewById(R.id.verify_signature_message);
+        verifySignatureText = findViewById(R.id.verify_signature_key);
+        verifySignatureButton = findViewById(R.id.verify_button);
+
         decryptCheckBox.setOnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
                 decryptText.setVisibility(View.VISIBLE);
@@ -124,6 +132,17 @@ class MessageContainerView(context: Context, attrs: AttributeSet?) :
                 decryptButton.setVisibility(View.GONE);
             }
         }
+
+        verifySignatureCheckBox.setOnCheckedChangeListener {_, isChecked ->
+            if (isChecked) {
+                verifySignatureText.setVisibility(View.VISIBLE);
+                verifySignatureButton.setVisibility(View.VISIBLE);
+            } else {
+                verifySignatureText.setVisibility(View.GONE);
+                verifySignatureButton.setVisibility(View.GONE);
+            }
+        }
+
         decryptText.addTextChangedListener(
             object : TextWatcher {
                 override fun afterTextChanged(s: Editable) {
