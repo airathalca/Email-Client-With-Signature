@@ -262,7 +262,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     private String encryptionKeyString = "";
     private CheckBox encryptionKeyCheckBox;
 
-    //TODO: add attribute for signature
+    //TODO: add attribute for signature: Ini bisa ikutin App.java di repo Kinan
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
