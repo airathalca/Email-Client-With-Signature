@@ -1,68 +1,31 @@
-# K-9 Mail
+# Tugas-Besar-3-IF4020-Kriptografi
+> Program Secure Client Email untuk mengenkripsi email serta membubuhi digital signature
 
-[![Latest release](https://img.shields.io/github/release/thundernest/k-9.svg?style=flat-square)](https://github.com/thundernest/k-9/releases/latest)
-[![Latest beta release](https://img.shields.io/github/v/release/thundernest/k-9.svg?include_prereleases&style=flat-square)](https://github.com/thundernest/k-9/releases)
+## Daftar Isi
 
-K-9 Mail is an open-source email client for Android.
+- [Deskripsi Singkat](#deskripsi-singkat)
+- [Fitur Program](#fitur-program)
+- [Cara Menjalankan Program](#cara-menjalankan-program)
 
-## Download
+## Deskrispi Singkat
 
-K-9 Mail can be downloaded from a couple of sources:
+Sebagian besar aplikasi e-mail client tidak memiliki fitur enkripsi surel dan fitur tanda tangan digital. Surel rawan untuk disadap dan dibaca oleh pihak yang tidak berhak, dimanipulasi, dan sebagainya. Enkripsi dapat digunakan untuk untuk menjaga kerahasiaan surel, sedangkan tanda tangan digital dapat digunakan untuk keperluan otentikasi (pengirim dan penerima surel), keaslian isi surel (data integrity), dan nirpenyangkalan (non-repudiation).
 
-- [Google Play](https://play.google.com/store/apps/details?id=com.fsck.k9)
-- [F-Droid](https://f-droid.org/repository/browse/?fdid=com.fsck.k9)
-- [Github Releases](https://github.com/thundernest/k-9/releases)
+## Fitur Program
 
-You might also be interested in becoming a [tester](https://forum.k9mail.app/t/how-do-i-become-a-beta-tester/68) to get an early look at new versions.
+1. Klien surel dapat membangkitkan kunci publik dan kunci privat berdasarkan Elliptic Curve Cryptography.
+2. Klien surel memiliki editor untuk mengetikkan isi surel, memasukkan alamat surel penerima, mengetikkan subyek surel, dll.
+3. Klien surel dapat menampilkan inbox, sent email, dan fitur-fitur umum yang terdapat di dalam klien surel.
+4. Klien surel boleh menyediakan attachment, tetapi file yang di-attach tidak dienkripsi.
+5. Pengguna dapat memilih apakah surel ditandatangani atau tidak (ada toggle icon untuk memilihnya).
+6. Jika pengguna memilih mengenkripsi/dekripsi surel, maka klien surel meminta pengguna memasukkan kunci.
+7. Isi surel dienkripsi/dekripsi dengan block cipher yang sudah dibuat sebelumnya.
+8. Program Keccak (SHA-3) dibuat sendiri oleh pemrogram (tidak menggunakan library atau fungsi built-in).
+9. Jika pengguna memilih menandatangani surel (baik surel terenkripsi atau tidak), maka klien meminta kunci privat. Untuk memverifikasi tanda tangan digital, klien surel meminta kunci public. Kunci public/privat dapat dibaca dari file yang terdapat di dalam Android KeyStore.
 
-## Release Notes
+## Cara Menjalankan Program
 
-Check out the [Release Notes](https://github.com/thundernest/k-9/wiki/ReleaseNotes) to find out what changed
-in each version of K-9 Mail.
-
-## Need Help?
-
-If the app is not behaving like it should, you might find these resources helpful:
-
-- [User Manual](https://docs.k9mail.app/)
-- [Frequently Asked Questions](https://forum.k9mail.app/c/faq)
-- [Support Forum](https://forum.k9mail.app/)
-
-## Translations
-
-Interested in helping to translate K-9 Mail? Contribute here:
-
-- [K-9 Mail localization](https://explore.transifex.com/k-9/k9mail/)
-
-## Contributing
-
-Thank you for contributing! If you're unfamiliar with the code, start by reading the [developer documentation](docs/DESIGN.md)
-
-Please fork this repository and contribute back using [pull requests](https://github.com/thundernest/k-9/pulls).
-
-Any contributions, large or small, major features, bug fixes, unit/integration tests are welcomed and appreciated
-but will be thoroughly reviewed and discussed.
-Please make sure you read the [Code Style Guidelines](https://github.com/thundernest/k-9/wiki/CodeStyle).
-
-## Communication
-
-Aside from discussing changes in [pull requests](https://github.com/thundernest/k-9/pulls) and
-[issues](https://github.com/thundernest/k-9/issues) we use the following communication services:
-
-- Matrix: [#k9mail:matrix.org](https://matrix.to/#/#tb-android:mozilla.org)
-- IRC: [#k9mail on Libera Chat](https://web.libera.chat/#k9mail)
-- [Developer mailing list](https://groups.google.com/forum/#!forum/k-9-dev)
-
-## License
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+1. Pastikan Anda telah memiliki program Android Studio pada mesin Anda.
+2. Clone repository ini pada Android Studio.
+3. Lakukan perintah Build Gradle untuk membangun aplikasi.
+4. Jalankan aplikasi tersebut pada emulator atau device Android yang Anda miliki.
