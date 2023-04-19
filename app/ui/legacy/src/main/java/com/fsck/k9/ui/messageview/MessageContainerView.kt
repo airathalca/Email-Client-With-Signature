@@ -55,6 +55,7 @@ import android.util.Log
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.CheckBox;
+import com.fsck.k9.ecdsa.EmailParser
 import okhttp3.MediaType
 
 class MessageContainerView(context: Context, attrs: AttributeSet?) :
@@ -86,8 +87,8 @@ class MessageContainerView(context: Context, attrs: AttributeSet?) :
     private lateinit var decryptText: EditText;
     private lateinit var decryptButton: Button;
 
-    private lateinit var verifySignatureCheckBox: CheckBox;
-    private lateinit var verifySignatureText: EditText;
+//    private lateinit var verifySignatureCheckBox: CheckBox;
+//    private lateinit var verifySignatureText: EditText;
     private lateinit var verifySignatureButton: Button;
     // TODO: create signature
 
@@ -119,8 +120,8 @@ class MessageContainerView(context: Context, attrs: AttributeSet?) :
         decryptText = findViewById(R.id.decrypt_key);
         decryptButton = findViewById(R.id.decrypt_button);
 
-        verifySignatureCheckBox = findViewById(R.id.verify_signature_message);
-        verifySignatureText = findViewById(R.id.verify_signature_key);
+//        verifySignatureCheckBox = findViewById(R.id.verify_signature_message);
+//        verifySignatureText = findViewById(R.id.verify_signature_key);
         verifySignatureButton = findViewById(R.id.verify_button);
 
         decryptCheckBox.setOnCheckedChangeListener { buttonView, isChecked ->
@@ -133,15 +134,15 @@ class MessageContainerView(context: Context, attrs: AttributeSet?) :
             }
         }
 
-        verifySignatureCheckBox.setOnCheckedChangeListener {_, isChecked ->
-            if (isChecked) {
-                verifySignatureText.setVisibility(View.VISIBLE);
-                verifySignatureButton.setVisibility(View.VISIBLE);
-            } else {
-                verifySignatureText.setVisibility(View.GONE);
-                verifySignatureButton.setVisibility(View.GONE);
-            }
-        }
+//        verifySignatureCheckBox.setOnCheckedChangeListener {_, isChecked ->
+//            if (isChecked) {
+//                verifySignatureText.setVisibility(View.VISIBLE);
+//                verifySignatureButton.setVisibility(View.VISIBLE);
+//            } else {
+//                verifySignatureText.setVisibility(View.GONE);
+//                verifySignatureButton.setVisibility(View.GONE);
+//            }
+//        }
 
         decryptText.addTextChangedListener(
             object : TextWatcher {
@@ -160,7 +161,7 @@ class MessageContainerView(context: Context, attrs: AttributeSet?) :
         );
 
         decryptButton.setOnClickListener {
-            var cipher = parse();
+            var cipher = parseEmailString();
             val key = decryptText.getText().toString();
             val serviceCipher = RetrofitInstance.getRetrofitInstance();
             val call = serviceCipher.decrypt(key, cipher);
@@ -178,10 +179,41 @@ class MessageContainerView(context: Context, attrs: AttributeSet?) :
                 Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show();
             }
         }
+
+        verifySignatureButton.setOnClickListener {
+            var signature = "";
+            var publicKey = "";
+            var emailText = parseEmailString();
+
+            // Regular expressions to extract the signature and public key
+            val signatureRegex = Regex("^---BEGIN SIGNATURE---\\s*\n(.+?)\\s*\n---END SIGNATURE---", RegexOption.DOT_MATCHES_ALL)
+            val publicKeyRegex = Regex("^---BEGIN PUBLIC KEY---\\s*\n(.+?)\\s*\n---END PUBLIC KEY---", RegexOption.DOT_MATCHES_ALL)
+
+            // Extract the signature and public key from the email text
+            signature = signatureRegex.find(emailText)?.groupValues?.get(1).toString()
+            publicKey = publicKeyRegex.find(emailText)?.groupValues?.get(1).toString()
+
+            // Remove the signature and public key from the email text to get the email message
+            val emailMessage = emailText.replace(signatureRegex, "").replace(publicKeyRegex, "").trim()
+
+            var isVerified = false;
+            try {
+                isVerified = EmailParser.verifyMessage(emailMessage, signature, publicKey)
+            } catch (e: Exception) {
+                Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show();
+            }
+
+            if (isVerified) {
+                Toast.makeText(context, "The authenticity of message is verified.", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(context, "This message can't be verified.", Toast.LENGTH_LONG).show();
+            }
+        }
+
     }
     // TODO: unpack signature after decryption
 
-    fun parse(): String {
+    fun parseEmailString(): String {
         var message = currentHtmlText;
         val index = message?.indexOf("<body><div dir=\"auto\">");
         val lastIndex = message?.indexOf("</div></body>");

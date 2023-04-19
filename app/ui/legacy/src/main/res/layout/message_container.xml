@@ -40,7 +40,7 @@
             android:visibility="gone"
             style="@style/ComposeEditTextLarge"
             />
-        
+
         <Button
             android:id="@+id/decrypt_button"
             android:layout_width="100dp"
@@ -60,29 +60,6 @@
         android:layout_weight="0"
         android:orientation="horizontal">
 
-        <CheckBox
-            android:id="@+id/verify_signature_message"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="0"
-            android:checked="false"
-            android:padding="5dp"
-            android:text="Verify Signature" />
-
-        <EditText
-            android:id="@+id/verify_signature_key"
-            style="@style/ComposeEditTextLarge"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@android:color/transparent"
-            android:hint="Verify Signature Key"
-            android:imeOptions="actionNext|flagNoExtractUi"
-            android:inputType="textEmailSubject|textAutoCorrect|textCapSentences"
-            android:padding="10dp"
-            android:singleLine="true"
-            android:visibility="gone" />
-
         <Button
             android:id="@+id/verify_button"
             android:layout_width="100dp"
@@ -90,7 +67,7 @@
             android:layout_weight="0"
             android:padding="3dp"
             android:text="Verify"
-            android:visibility="gone" />
+            android:visibility="visible" />
     </LinearLayout>
 
     <LinearLayout

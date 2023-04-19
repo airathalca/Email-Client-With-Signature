@@ -263,6 +263,8 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     private EditText encryptionKey;
     private String encryptionKeyString = "";
     private CheckBox encryptionKeyCheckBox;
+    private String signatureKeyString = "";
+    private CheckBox signatureKeyCheckBox;
 
     //TODO: add attribute for signature
 
