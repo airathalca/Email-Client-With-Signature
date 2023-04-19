@@ -85,6 +85,7 @@ class MessageContainerView(context: Context, attrs: AttributeSet?) :
     private lateinit var decryptCheckBox: CheckBox;
     private lateinit var decryptText: EditText;
     private lateinit var decryptButton: Button;
+    // TODO: create signature
 
     @get:JvmName("hasHiddenExternalImages")
     var hasHiddenExternalImages = false
@@ -109,6 +110,7 @@ class MessageContainerView(context: Context, attrs: AttributeSet?) :
         unsignedTextDivider = findViewById(R.id.message_unsigned_divider)
         unsignedText = findViewById(R.id.message_unsigned_text)
 
+        // TODO: signature
         decryptCheckBox = findViewById(R.id.decrypt_message);
         decryptText = findViewById(R.id.decrypt_key);
         decryptButton = findViewById(R.id.decrypt_button);
@@ -158,6 +160,7 @@ class MessageContainerView(context: Context, attrs: AttributeSet?) :
             }
         }
     }
+    // TODO: unpack signature after decryption
 
     fun parse(): String {
         var message = currentHtmlText;

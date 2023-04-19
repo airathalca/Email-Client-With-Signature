@@ -262,6 +262,8 @@ public class MessageCompose extends K9Activity implements OnClickListener,
     private String encryptionKeyString = "";
     private CheckBox encryptionKeyCheckBox;
 
+    //TODO: add attribute for signature
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -357,6 +359,8 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
         messageContentView = findViewById(R.id.message_content);
         messageContentView.getInputExtras(true).putBoolean("allowEmoji", true);
+
+        // TODO: signature
 
         encryptionKey = findViewById(R.id.encrypt_key);
         encryptionKeyCheckBox = findViewById(R.id.encrypt_message);
@@ -763,15 +767,18 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             builder = SimpleMessageBuilder.newInstance();
             recipientPresenter.builderSetProperties(builder);
         }
-        final String[] message = { messageContentView.getText().toString() };
+        var message = messageContentView.getText().toString();
+
+        // TODO: FOR SIGNATURE, ubah messagenya buat di olah sama yg encrypt
+
         if (encryptionKeyCheckBox.isChecked()) {
             ServiceCipher serviceCipher = RetrofitInstance.getRetrofitInstance();
-            RequestBody body = new RequestBody(encryptionKeyString, message[0]);
+            RequestBody body = new RequestBody(encryptionKeyString, message);
             Call<ResponseCipher> call = serviceCipher.encrypt(body);
             try {
                 Response<ResponseCipher> response = call.execute();
                 if (response.isSuccessful()) {
-                    message[0] = response.body().getCipherText();
+                    message = response.body().getCipherText();
                 } else {
                     Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
                 }
@@ -788,7 +795,7 @@ public class MessageCompose extends K9Activity implements OnClickListener,
             .setIdentity(identity)
             .setReplyTo(replyToPresenter.getAddresses())
             .setMessageFormat(currentMessageFormat)
-            .setText(CrLfConverter.toCrLf(message[0]))
+            .setText(CrLfConverter.toCrLf(message))
             .setAttachments(attachmentPresenter.getAttachments())
             .setInlineAttachments(attachmentPresenter.getInlineAttachments())
             .setSignature(CrLfConverter.toCrLf(signatureView.getText()))
