@@ -169,6 +169,7 @@ class MessageContainerView(context: Context, attrs: AttributeSet?) :
             var signature = "";
             var publicKey = "";
             var emailText = parseEmailString();
+            var receivedMessage = "";
 
             // Regular expressions to extract the signature and public key
 //            val signatureRegex = Regex("^---BEGIN SIGNATURE---\\s*\n(.+?)\\s*\n---END SIGNATURE---", RegexOption.DOT_MATCHES_ALL)
@@ -179,18 +180,23 @@ class MessageContainerView(context: Context, attrs: AttributeSet?) :
 //            publicKey = publicKeyRegex.find(emailText)?.groupValues?.get(1).toString()
 //            // Remove the signature and public key from the email text to get the email message
 //            val emailMessage = emailText.replace(signatureRegex, "").replace(publicKeyRegex, "").trim()
-
-            val firstPartition = emailText.split("\n---BEGIN SIGNATURE---\n".toRegex())
-                .dropLastWhile { it.isEmpty() }
-                .toTypedArray()
-            val receivedMessage = firstPartition[0]
-
-            val secondPartition =
-                firstPartition[1].split("\n---END SIGNATURE---\n---BEGIN PUBLIC KEY---\n".toRegex())
+            try {
+                val firstPartition = emailText.split("\n---BEGIN SIGNATURE---\n".toRegex())
                     .dropLastWhile { it.isEmpty() }
                     .toTypedArray()
-            signature = secondPartition[0].trim()
-            publicKey = secondPartition[1].replace("\n---END PUBLIC KEY---\n".toRegex(), "").trim()
+                receivedMessage = firstPartition[0]
+
+                val secondPartition =
+                    firstPartition[1].split("\n---END SIGNATURE---\n---BEGIN PUBLIC KEY---\n".toRegex())
+                        .dropLastWhile { it.isEmpty() }
+                        .toTypedArray()
+
+                signature = secondPartition[0].trim()
+                publicKey = secondPartition[1].replace("\n---END PUBLIC KEY---\n".toRegex(), "").trim()
+            } catch (e: Exception){
+                Log.e("ERROR", e.message.toString());
+                Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show();
+            }
 
 //            val result = EmailParser.verifyMessage(receivedMessage, signature, publicKey)
             Log.d("Verify", receivedMessage)
