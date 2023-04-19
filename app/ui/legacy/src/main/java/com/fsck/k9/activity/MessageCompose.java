@@ -392,12 +392,14 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         }
         byte[] hash = messageDigest.digest(message);
 
+        PublicKey publicKey;
+        byte[] sign;
         try {
             PrivateKey initialPrivateKey = EllipticalCurveKey.generatePrivateKey(ellipticalCurve, basePoint, n);
-            PublicKey publicKey = EllipticalCurveKey.generatePublicKey(ellipticalCurve, basePoint, n, initialPrivateKey);
+            publicKey = EllipticalCurveKey.generatePublicKey(ellipticalCurve, basePoint, n, initialPrivateKey);
 
             DigitalSigning digitalSigning = new DigitalSigning(ellipticalCurve, basePoint, n, initialPrivateKey);
-            byte[] sign = digitalSigning.getSigning(hash);
+            sign = digitalSigning.getSigning(hash);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
