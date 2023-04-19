@@ -28,4 +28,5 @@ Sebagian besar aplikasi e-mail client tidak memiliki fitur enkripsi surel dan fi
 1. Pastikan Anda telah memiliki program Android Studio pada mesin Anda.
 2. Clone repository ini pada Android Studio.
 3. Lakukan perintah Build Gradle untuk membangun aplikasi.
-4. Jalankan aplikasi tersebut pada emulator atau device Android yang Anda miliki.
+4. Ganti BASE_URL pada instance retrofit menjadi IP server backend yang telah dijalankan.
+5. Jalankan aplikasi tersebut pada emulator atau device Android yang Anda miliki.
