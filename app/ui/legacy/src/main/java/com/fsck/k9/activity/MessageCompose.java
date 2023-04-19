@@ -4,8 +4,6 @@ package com.fsck.k9.activity;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Date;
@@ -106,6 +104,7 @@ import com.fsck.k9.helper.MailTo;
 import com.fsck.k9.helper.ReplyToParser;
 import com.fsck.k9.helper.SimpleTextWatcher;
 import com.fsck.k9.helper.Utility;
+import com.fsck.k9.keccak.Keccak;
 import com.fsck.k9.mail.Flag;
 import com.fsck.k9.mail.Message;
 import com.fsck.k9.mail.Message.RecipientType;
@@ -381,16 +380,10 @@ public class MessageCompose extends K9Activity implements OnClickListener,
         BigInteger n = new BigInteger("FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551", 16);
 
         // TODO: INI DIGANTI DENGAN EMAIL
-        byte[] message = "Hello World!".getBytes();
+        var message = messageContentView.getText().toString().getBytes();
 
-        // TODO: INI DIGANTI DENGAN ALGORITMA GAGAS
-        MessageDigest messageDigest;
-        try {
-            messageDigest = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-        byte[] hash = messageDigest.digest(message);
+        Keccak keccakInstance = new Keccak();
+        byte[] hash = keccakInstance.hash(message);
 
         PublicKey publicKey;
         byte[] sign;
