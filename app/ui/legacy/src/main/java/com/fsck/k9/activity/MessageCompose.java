@@ -3,9 +3,7 @@ package com.fsck.k9.activity;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -89,10 +87,7 @@ import com.fsck.k9.controller.MessageReference;
 import com.fsck.k9.controller.MessagingController;
 import com.fsck.k9.controller.MessagingListener;
 import com.fsck.k9.controller.SimpleMessagingListener;
-import com.fsck.k9.ecdsa.DigitalSigning;
-import com.fsck.k9.ecdsa.EllipticalCurve;
-import com.fsck.k9.ecdsa.EllipticalCurveKey;
-import com.fsck.k9.ecdsa.Point;
+import com.fsck.k9.ecdsa.EmailParser;
 import com.fsck.k9.fragment.AttachmentDownloadDialogFragment;
 import com.fsck.k9.fragment.AttachmentDownloadDialogFragment.AttachmentDownloadCancelListener;
 import com.fsck.k9.fragment.ProgressDialogFragment;
@@ -369,35 +364,16 @@ public class MessageCompose extends K9Activity implements OnClickListener,
 
         // TODO: signature @rayhankinan
 
-        BigInteger a = new BigInteger("FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFC", 16);
-        BigInteger b = new BigInteger("5AC635D8AA3A93E7B3EBBD55769886BC651D06B0CC53B0F63BCE3C3E27D2604B", 16);
-        BigInteger p = new BigInteger("FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF", 16);
+        var message = messageContentView.getText().toString();
+        PrivateKey privateKey = EmailParser.generatePrivateKey();
 
-        EllipticalCurve ellipticalCurve = new EllipticalCurve(a, b, p);
-        Point basePoint = new Point(
-            new BigInteger("6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296", 16),
-            new BigInteger("4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5", 16));
-        BigInteger n = new BigInteger("FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551", 16);
-
-        // TODO: INI DIGANTI DENGAN EMAIL
-        var message = messageContentView.getText().toString().getBytes();
-
-        Keccak keccakInstance = new Keccak();
-        byte[] hash = keccakInstance.hash(message);
-
-        PublicKey publicKey;
-        byte[] sign;
         try {
-            PrivateKey initialPrivateKey = EllipticalCurveKey.generatePrivateKey(ellipticalCurve, basePoint, n);
-            publicKey = EllipticalCurveKey.generatePublicKey(ellipticalCurve, basePoint, n, initialPrivateKey);
+            var signedMessage = EmailParser.signMessage(privateKey, message);
+            messageContentView.setText(signedMessage); // TODO: CEK INI
 
-            DigitalSigning digitalSigning = new DigitalSigning(ellipticalCurve, basePoint, n, initialPrivateKey);
-            sign = digitalSigning.getSigning(hash);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        // TODO: Sign dan Public Key dimasukkan ke dalam email
 
         encryptionKey = findViewById(R.id.encrypt_key);
         encryptionKeyCheckBox = findViewById(R.id.encrypt_message);
